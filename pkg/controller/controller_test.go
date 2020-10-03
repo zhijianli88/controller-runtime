@@ -63,7 +63,7 @@ var _ = Describe("controller.Controller", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			c, err := controller.New("foo", m, controller.Options{Reconciler: &failRec{}})
-			Expect(c).To(BeNil())
+			Expect(c).NotTo(BeNil())
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring("expected error"))
 
