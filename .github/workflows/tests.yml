@@ -1,0 +1,84 @@
+name: tests
+on: [push]
+env:
+  KUBE_VER: 1.16.4
+  envtest-cache-dir: envtest
+  # put this in testdata to avoid go test finding it
+  gomod-cache-dir: .gomod
+  gomod-cache-path: ${{ github.workspace }}/.gomod
+jobs:
+  # have this as a separate job so that we always cache go
+  # modules regardless of if tests pass
+  cachemods:
+    name: cache things
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: cache go modules
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-go-modules
+        with:
+          path: ${{ env.gomod-cache-path }}
+          key: ${{ env.cache-name }}-${{ hashFiles('go.mod') }}
+          restore-keys: |
+            ${{ env.cache-name }}-${{ hashFiles('go.mod') }}
+            ${{ env.cache-name }}-
+      - name: go mod download
+        uses: docker://golang:1.15
+        with:
+          args: go mod download
+        env:
+          GOMODCACHE: /github/workspace/${{ env.gomod-cache-dir }}
+      # the module cache's permissions are *weirdly* restrictive, and my guess
+      # is that running in the container screwed them up somehow, so fix them
+      # to be readable before upload
+      - name: fix mod cache perms
+        # other + read, execute if already executable or is a directory
+        run: sudo chmod -R o+rX ${{ env.gomod-cache-path }}
+      - name: cache envtest utils
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-envtest-utils
+        with:
+          path: ${{ github.workspace }}/${{ env.envtest-cache-dir }}
+          key: ${{ env.cache-name }}-${{ env.KUBE_VER }}-${{ runner.os }}
+      - name: fetch envtest utils
+        run: ./hack/ci-fetch-envtest.sh
+        env:
+          ENVTEST_UTILS_PATH: ${{ github.workspace }}/${{ env.envtest-cache-dir }}
+  test:
+    env:
+      ARTIFACTS: /github/workspace/artifacts
+    name: tests
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: cache go modules
+      uses: actions/cache@v2
+      env:
+        cache-name: cache-go-modules
+      with:
+        path: ${{ env.gomod-cache-path }}
+        key: ${{ env.cache-name }}-${{ hashFiles('go.mod') }}
+        restore-keys: |
+          ${{ env.cache-name }}-${{ hashFiles('go.mod') }}
+          ${{ env.cache-name }}-
+    - name: cache envtest utils
+      uses: actions/cache@v2
+      env:
+        cache-name: cache-envtest-utils
+      with:
+        path: ${{ github.workspace }}/${{ env.envtest-cache-dir }}
+        key: ${{ env.cache-name }}-${{ env.KUBE_VER }}-${{ runner.os }}
+    - name: go test
+      uses: docker://golang:1.15
+      with:
+        args: ./hack/ci-test-only.sh
+      env:
+        GOMODCACHE: /github/workspace/${{ env.gomod-cache-dir }}
+        ENVTEST_UTILS_PATH: ${{ github.workspace }}/${{ env.envtest-cache-dir }}
+    - name: upload results
+      uses: docker://gcr.io/kubebuilder/upload-tests:alpha3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
