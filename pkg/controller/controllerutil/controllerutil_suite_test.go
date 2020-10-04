@@ -31,7 +31,7 @@ import (
 func TestControllerutil(t *testing.T) {
 	RegisterFailHandler(Fail)
 	suiteName := "Controllerutil Suite"
-	RunSpecsWithDefaultAndCustomReporters(t, suiteName, []Reporter{printer.NewlineReporter{}, printer.NewProwReporter(suiteName)})
+	RunSpecsWithDefaultAndCustomReporters(t, suiteName, printer.CIReporters(suiteName))
 }
 
 var t *envtest.Environment

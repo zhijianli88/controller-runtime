@@ -27,5 +27,5 @@ import (
 func TestSource(t *testing.T) {
 	RegisterFailHandler(Fail)
 	suiteName := "Runtime Injection Suite"
-	RunSpecsWithDefaultAndCustomReporters(t, suiteName, []Reporter{printer.NewlineReporter{}, printer.NewProwReporter(suiteName)})
+	RunSpecsWithDefaultAndCustomReporters(t, suiteName, printer.CIReporters(suiteName))
 }

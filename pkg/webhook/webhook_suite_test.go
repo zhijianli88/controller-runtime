@@ -30,7 +30,7 @@ import (
 func TestSource(t *testing.T) {
 	RegisterFailHandler(Fail)
 	suiteName := "Webhook Integration Suite"
-	RunSpecsWithDefaultAndCustomReporters(t, suiteName, []Reporter{printer.NewlineReporter{}, printer.NewProwReporter(suiteName)})
+	RunSpecsWithDefaultAndCustomReporters(t, suiteName, printer.CIReporters(suiteName))
 }
 
 var _ = BeforeSuite(func(done Done) {

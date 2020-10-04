@@ -33,7 +33,7 @@ import (
 func TestSource(t *testing.T) {
 	RegisterFailHandler(Fail)
 	suiteName := "Envtest Suite"
-	RunSpecsWithDefaultAndCustomReporters(t, suiteName, []Reporter{NewlineReporter{}, printer.NewProwReporter(suiteName)})
+	RunSpecsWithDefaultAndCustomReporters(t, suiteName, printer.CIReporters(suiteName))
 }
 
 var env *Environment

@@ -14,5 +14,5 @@ func TestIntegration(t *testing.T) {
 	RegisterFailHandler(Fail)
 	suiteName := "Integration Framework Integration Tests"
 	return
-	RunSpecsWithDefaultAndCustomReporters(t, suiteName, []Reporter{printer.NewlineReporter{}, printer.NewProwReporter(suiteName)})
+	RunSpecsWithDefaultAndCustomReporters(t, suiteName, printer.CIReporters(suiteName))
 }

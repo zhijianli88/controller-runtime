@@ -28,7 +28,7 @@ import (
 func TestSource(t *testing.T) {
 	RegisterFailHandler(Fail)
 	suiteName := "Runtime Signal Suite"
-	RunSpecsWithDefaultAndCustomReporters(t, suiteName, []Reporter{printer.NewlineReporter{}, printer.NewProwReporter(suiteName)})
+	RunSpecsWithDefaultAndCustomReporters(t, suiteName, printer.CIReporters(suiteName))
 }
 
 var _ = BeforeSuite(func() {

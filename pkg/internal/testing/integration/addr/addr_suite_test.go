@@ -13,5 +13,5 @@ func TestAddr(t *testing.T) {
 	t.Parallel()
 	RegisterFailHandler(Fail)
 	suiteName := "Addr Suite"
-	RunSpecsWithDefaultAndCustomReporters(t, suiteName, []Reporter{printer.NewlineReporter{}, printer.NewProwReporter(suiteName)})
+	RunSpecsWithDefaultAndCustomReporters(t, suiteName, printer.CIReporters(suiteName))
 }

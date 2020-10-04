@@ -29,7 +29,7 @@ import (
 func TestConversionWebhook(t *testing.T) {
 	RegisterFailHandler(Fail)
 	suiteName := "CRD conversion Suite"
-	RunSpecsWithDefaultAndCustomReporters(t, suiteName, []Reporter{printer.NewlineReporter{}, printer.NewProwReporter(suiteName)})
+	RunSpecsWithDefaultAndCustomReporters(t, suiteName, printer.CIReporters(suiteName))
 }
 
 var _ = BeforeSuite(func(done Done) {

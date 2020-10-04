@@ -29,7 +29,7 @@ import (
 func TestInternal(t *testing.T) {
 	RegisterFailHandler(Fail)
 	suiteName := "Source Internal Suite"
-	RunSpecsWithDefaultAndCustomReporters(t, suiteName, []Reporter{printer.NewlineReporter{}, printer.NewProwReporter(suiteName)})
+	RunSpecsWithDefaultAndCustomReporters(t, suiteName, printer.CIReporters(suiteName))
 }
 
 var _ = BeforeSuite(func() {
