@@ -48,8 +48,17 @@ jobs:
         env:
           ENVTEST_UTILS_PATH: ${{ github.workspace }}/${{ env.envtest-cache-dir }}
   test:
-    env:
-      ARTIFACTS: /github/workspace/artifacts
+    services:
+      uploader:
+        image: gcr.io/kubebuilder/upload-tests:alpha4
+        ports:
+        - 8675:8675
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_SHA: ${{ github.sha }}
+        volumes:
+        - ${{ github.workspace }}:/github/workspace
     name: tests
     runs-on: ubuntu-latest
     steps:
@@ -78,7 +87,9 @@ jobs:
       env:
         GOMODCACHE: /github/workspace/${{ env.gomod-cache-dir }}
         ENVTEST_UTILS_PATH: ${{ github.workspace }}/${{ env.envtest-cache-dir }}
-    - name: upload results
-      uses: docker://gcr.io/kubebuilder/upload-tests:alpha3
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
+        REMOTE_TEST_OUT_ADDR: uploader:8675
+    - name: check uploader logs
+      if: ${{ failure() }}
+      run: |
+        docker logs "${{ job.services.uploader.id }}"
+        docker inspect --format "{{json .State.Health }}" "${{ job.services.uploader.id }}"

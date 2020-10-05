@@ -35,7 +35,11 @@ ENVTEST_K8S_VERSION=${KUBE_VER?must set KUBE_VER (env.kube-ver in workflow YAML)
 ${hack_dir}/ci-fetch-envtest.sh
 setup_envtest_env "${ENVTEST_UTILS_PATH}"
 
-# success or failure is determined by the next step, always exit success
-set +o pipefail
-( ${hack_dir}/test-all.sh ) || exit 0
-set -o pipefail
+# delay success or failure till we indicate that we're done
+# (actions suite results ignore non-actions check runs)
+test_res=0
+if ! ( ${hack_dir}/test-all.sh ); then
+    test_res=1
+fi
+curl -q -XPOST "http://${REMOTE_TEST_OUT_ADDR}/done" # note that we're done sending test results
+exit $test_res
